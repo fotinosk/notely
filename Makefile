@@ -13,6 +13,11 @@ init: clean $(TARGET) create-pre-commit-hook
 clean:
 	rm -f $(TARGET)
 
+.PHONY: install
+install:
+	sudo cp $(TARGET) /usr/local/bin
+	@echo "$(TARGET) installed to /usr/local/bin"
+
 .PHONY: create-pre-commit-hook
 create-pre-commit-hook:
 	@echo "#!/bin/bash" > .git/hooks/pre-commit

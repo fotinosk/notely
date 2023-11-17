@@ -89,7 +89,6 @@ int projectExists(string cwd, string project_name) {
 	return 0;
 }
 
-
 void init(char* project_name, bool verbose=false) {
 	/*
 	Init with the project name
@@ -122,13 +121,59 @@ void init(char* project_name, bool verbose=false) {
 	std::ofstream masterfile(master_file_name, ios::app);
 	masterfile << scwd << " " << project_name << " " << project_dir << endl;
 	masterfile.close();
+
+	std:ofstream rootnote(root_note);
+	rootnote.close();
 }
 
+void append_note(string note, string path) {
+	// add to the notes file
+
+	string root = path + "/root.txt";
+	std::ofstream notes_files(root, ios::app);
+	notes_files << note << endl;
+	notes_files.close();
+
+}
+
+string get_project_path() {
+	// recursively check for a match 
+	//  you might be at "~/dir/subdir" with the root being "~/dir" 
+	// it should still match or give an error
+	// full path should be a substring
+
+	filesystem::path cwd = filesystem::current_path();
+	ifstream masterfile(master_file_name);
+
+	string line;
+	while (getline(masterfile, line)) {
+		// check if the current path is a substring of the note root path, 
+		// which is the first entry of the master file line
+
+        istringstream iss(line);
+		string word;
+		iss >> word;
+
+		if (string(cwd).find(word) != std::string::npos) {
+			iss >> word;
+			iss >> word;
+			return word;
+		}
+	}
+	cout << "Unable to find project, did you initialize?" << endl;
+	throw exception();
+	
+}
 
 int main(int argc, char* argv[]) {
 	preinit();
 
 	bool verbose = isVerboseFlagPresent(argc, argv);
+
+	if (argc == 1) {
+		cout << "No command line arguments given" << endl;
+		throw exception();
+	}
 	
 	if (strcmp(argv[1], "--init") == 0) {
 		if (argc < 3) {
@@ -137,6 +182,18 @@ int main(int argc, char* argv[]) {
 		}
 		char* project_name = argv[2];
 		init(project_name, verbose);
+	}
+	// TODO: add more commands here (list, file, help etc)
+	else {
+		string path = get_project_path();
+
+		string note = argv[1];
+		for (int i = 2; i < argc; i++) {
+			note += " " + string(argv[i]);
+		}
+
+		// write the note to the root.txt 
+		append_note(note, path);
 	}
 	return 0;
 }
