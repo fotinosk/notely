@@ -183,8 +183,22 @@ int main(int argc, char* argv[]) {
 		char* project_name = argv[2];
 		init(project_name, verbose);
 	}
-	// TODO: add more commands here (list, file, help etc)
+	// TODO: add more commands here (list, folder, help etc)
+	else if (strcmp(argv[1], "--folder") == 0 || strcmp(argv[1], "-f") == 0) {
+		// write about this specific folder to a dedicated note about it
+		string path = get_project_path(); // FIXME: this is the wrong path - it's the path of the notes not the project
+		string note = argv[2];
+
+		// get the current file location relative to the parent path and mimic it in the notes
+		string folder_path = filesystem::current_path();
+		string relative_path = filesystem::relative(folder_path, path);
+
+		cout << path << endl;
+		cout << folder_path << endl;
+		cout << relative_path << endl;
+	}
 	else {
+		// if nothing is provided, then just add the note to the root file
 		string path = get_project_path();
 
 		string note = argv[1];
