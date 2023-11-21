@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <format>
+#include <vector>
 #include "utils.h"
 
 using namespace std;
@@ -66,22 +67,22 @@ int projectExists(string cwd, string project_name) {
         istringstream iss(line);
         
         // Process each word in the line
-		int word_num = 0;
+	int word_num = 0;
         string word;
         while (iss >> word) {
-			if (word_num == 0 && cwd.compare(word) == 0) {
-				path_exists = true;
-			}
+		if (word_num == 0 && cwd.compare(word) == 0) {
+			path_exists = true;
+		}
 
-			if (path_exists && word_num == 1 && project_name.compare(word) == 0) {
-				// project exists and has the same name
-				cout << "Notes already exist for current directory, no need to initialize" << endl;
-				return 1;
-			} else if (path_exists && word_num == 1 && project_name.compare(word) != 0) {
-				cout << "Notes already exist for current directory under a differnt project name: " << word << endl;
-				return 2;
-			}
-			++word_num;
+		if (path_exists && word_num == 1 && project_name.compare(word) == 0) {
+			// project exists and has the same name
+			cout << "Notes already exist for current directory, no need to initialize" << endl;
+			return 1;
+		} else if (path_exists && word_num == 1 && project_name.compare(word) != 0) {
+			cout << "Notes already exist for current directory under a differnt project name: " << word << endl;
+			return 2;
+		}
+		++word_num;
         }
     }
 
@@ -136,7 +137,7 @@ void append_note(string note, string path) {
 
 }
 
-string get_project_path() {
+vector<string> get_project_path() {
 	// recursively check for a match 
 	//  you might be at "~/dir/subdir" with the root being "~/dir" 
 	// it should still match or give an error
@@ -149,15 +150,20 @@ string get_project_path() {
 	while (getline(masterfile, line)) {
 		// check if the current path is a substring of the note root path, 
 		// which is the first entry of the master file line
+		
+		vector<string> resp;
 
-        istringstream iss(line);
+		istringstream iss(line);
 		string word;
 		iss >> word;
 
+		resp.push_back(word);
 		if (string(cwd).find(word) != std::string::npos) {
 			iss >> word;
 			iss >> word;
-			return word;
+
+			resp.push_back(word);
+			return resp;
 		}
 	}
 	cout << "Unable to find project, did you initialize?" << endl;
@@ -186,7 +192,8 @@ int main(int argc, char* argv[]) {
 	// TODO: add more commands here (list, folder, help etc)
 	else if (strcmp(argv[1], "--folder") == 0 || strcmp(argv[1], "-f") == 0) {
 		// write about this specific folder to a dedicated note about it
-		string path = get_project_path(); // FIXME: this is the wrong path - it's the path of the notes not the project
+		vector<string> paths = get_project_path(); 
+		string path = paths[0];
 		string note = argv[2];
 
 		// get the current file location relative to the parent path and mimic it in the notes
@@ -196,10 +203,14 @@ int main(int argc, char* argv[]) {
 		cout << path << endl;
 		cout << folder_path << endl;
 		cout << relative_path << endl;
+
+		// if relative path is . then write to root
+		// if it's not then create the dir with a root.txt in it
 	}
 	else {
 		// if nothing is provided, then just add the note to the root file
-		string path = get_project_path();
+		vector<string> paths = get_project_path();
+		string notes_path = paths[1];
 
 		string note = argv[1];
 		for (int i = 2; i < argc; i++) {
@@ -207,7 +218,7 @@ int main(int argc, char* argv[]) {
 		}
 
 		// write the note to the root.txt 
-		append_note(note, path);
+		append_note(note, notes_path);
 	}
 	return 0;
 }
