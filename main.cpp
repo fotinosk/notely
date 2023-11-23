@@ -129,6 +129,11 @@ void init(char* project_name, bool verbose=false) {
 
 void append_note(string note, string path) {
 	// add to the notes file
+	
+	// firstly if the path does not exist, create it
+	if (!filesystem::exists(path)) {
+		filesystem::create_directories(path);
+	}
 
 	string root = path + "/root.txt";
 	std::ofstream notes_files(root, ios::app);
@@ -192,20 +197,33 @@ int main(int argc, char* argv[]) {
 	// TODO: add more commands here (list, folder, help etc)
 	else if (strcmp(argv[1], "--folder") == 0 || strcmp(argv[1], "-f") == 0) {
 		// write about this specific folder to a dedicated note about it
+
+		if (argc < 3) {
+			cout << "not enough entries provided" << endl;
+			throw exception();
+		}
+
 		vector<string> paths = get_project_path(); 
 		string path = paths[0];
+		string project_path = paths[1];
+		
 		string note = argv[2];
+		for (int i = 3; i < argc; i++) {
+			note += " " + string(argv[i]);
+		}
 
 		// get the current file location relative to the parent path and mimic it in the notes
 		string folder_path = filesystem::current_path();
 		string relative_path = filesystem::relative(folder_path, path);
 
-		cout << path << endl;
-		cout << folder_path << endl;
-		cout << relative_path << endl;
-
-		// if relative path is . then write to root
-		// if it's not then create the dir with a root.txt in it
+		if (relative_path.compare(".") == 0) {
+			// write to root
+			append_note(note, project_path);
+		}
+		else {
+			string new_path = project_path + "/" + relative_path;
+			append_note(note, new_path);
+		}
 	}
 	else {
 		// if nothing is provided, then just add the note to the root file
