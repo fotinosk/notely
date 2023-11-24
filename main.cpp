@@ -225,6 +225,27 @@ int main(int argc, char* argv[]) {
 			append_note(note, new_path);
 		}
 	}
+	else if (strcmp(argv[1], "--list") == 0 || strcmp(argv[1], "-l") == 0) {
+		// list all available notes
+		
+		vector<string> paths = get_project_path(); 
+		string path = paths[0];
+		string project_path = paths[1];
+
+		// list all notes including the subnotes
+		for(const auto& p: std::filesystem::recursive_directory_iterator(project_path)) {
+			if (!std::filesystem::is_directory(p)) {
+				string note_path = filesystem::relative(p, project_path);
+
+				cout << "=================== Notes for " << note_path << " ===================" << endl;
+
+				ifstream notes(p.path());
+				stringstream buffer;
+				buffer << notes.rdbuf();
+				cout << buffer.str() << endl << endl;
+			}
+		    }
+	}
 	else {
 		// if nothing is provided, then just add the note to the root file
 		vector<string> paths = get_project_path();
