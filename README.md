@@ -4,8 +4,9 @@
 Notely allows you to quickly and simply take notes in about your work on your projects
 
 ### Usage
+```
 usage: notes [--init] [-h | --help] [-f | --folder] [-l | --list] [<notes>]
-
+```
 Here are some example uses:
 
 	notes --init     Initialize project in this directory
