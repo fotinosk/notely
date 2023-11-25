@@ -194,7 +194,14 @@ int main(int argc, char* argv[]) {
 		char* project_name = argv[2];
 		init(project_name, verbose);
 	}
-	// TODO: add more commands here (list, folder, help etc)
+	else if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0) {
+		cout << "usage: notes [--init] [-h | --help] [-f | --folder] [-l | --list] [<notes>]" << endl << endl;
+		cout << "Here are some example uses: " << endl;
+		cout << "\tnotes --init     Initialize project in this directory" << endl;
+		cout << "\tnotes <note>      Write note to the root project directory" << endl;
+		cout << "\tnotes  -f <note>  Write note to the current project subdirectory" << endl;
+		cout << "\tnotes  -l         List notes about current project" << endl;
+	}
 	else if (strcmp(argv[1], "--folder") == 0 || strcmp(argv[1], "-f") == 0) {
 		// write about this specific folder to a dedicated note about it
 
@@ -227,6 +234,7 @@ int main(int argc, char* argv[]) {
 	}
 	else if (strcmp(argv[1], "--list") == 0 || strcmp(argv[1], "-l") == 0) {
 		// list all available notes
+		const int line_length = 100;
 		
 		vector<string> paths = get_project_path(); 
 		string path = paths[0];
@@ -237,7 +245,10 @@ int main(int argc, char* argv[]) {
 			if (!std::filesystem::is_directory(p)) {
 				string note_path = filesystem::relative(p, project_path);
 
-				cout << "=================== Notes for " << note_path << " ===================" << endl;
+				string title = " Notes for " + note_path + " "; 
+				int header_len = (line_length - title.size())/2;
+				if (header_len < 1) { header_len = 1; }
+				cout << string(header_len, '=') + title + string(header_len, '=') << endl;
 
 				ifstream notes(p.path());
 				stringstream buffer;
